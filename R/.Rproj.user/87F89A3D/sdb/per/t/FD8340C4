@@ -1,0 +1,18 @@
+{
+    "contents" : "## checking map2stan\n\nsource('http://mc-stan.org/rstan/install.R', echo = TRUE, max.deparse.length = 2000)\ninstall_rstan()\nlibrary(devtools)\n\ninstall.packages(c('coda','mvtnorm'))\ninstall_github(\"rmcelreath/rethinking\")\n\n",
+    "created" : 1434487645706.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2263182857",
+    "id" : "FD8340C4",
+    "lastKnownWriteTime" : 1434488829,
+    "path" : "C:/Users/Myfanwy/Dropbox/GitHubRepos/gst_rheo/R/map2stan_rethinking_installation.R",
+    "project_path" : "map2stan_rethinking_installation.R",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

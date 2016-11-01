@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# Fig 1\n\nlibrary(devtools)\nlibrary(ggplot2)\nlibrary(grid)\n\n# d <- readxl::read_excel(\"../data_untidy/gst_rheo_all.xlsx\", na = \"NA\" )\nd <- read.csv(\"../data_tidy/gst_rheo_all.csv\", stringsAsFactors = FALSE, header = TRUE)\nd <- d[d$Type == \"with\", ]\n\n## After Convo with Pete ##\n\n\np <-  ggplot(d, aes(x = factor(Treatment), y = PropPos)) + geom_boxplot(aes(group = Treatment, size = 12), outlier.colour = \"transparent\", position = position_dodge(width = 0), width = 0.45, alpha = 0.75)\n\np <- p + geom_point(aes(alpha = 0.8), size = 15, position = position_jitter(width = 0.10))  + scale_x_discrete(labels = c(\"Above\", \"Below\", \"Dark\", \"Light\")) + \n  labs(y = \"Proportion Positive Rheotaxis During Trial\\n\") + xlab(\"\\nTreatment\") +  ggtitle(\"Proportion of Time Spent Positively Oriented by Treatment: \\nExperiment 1\") +\n  theme(text = element_text(family = \"Arial\", size = 82),\n    axis.line = element_line(colour = \"black\", size = 10),\n        panel.grid.major = element_blank(),\n        panel.grid.minor = element_blank(),\n        panel.border = element_blank(),\n        axis.title = element_text(vjust= 0.5, margin = margin(15, 15, 15, 15)), \n        plot.margin = (unit(c(0.5, 0.5, 0.5, 0.5), \"cm\")) ,\n        panel.background = element_blank(),\n        plot.title = element_text(hjust = 0.5))  + \n  theme(legend.position = \"none\") + geom_hline(yintercept = 0.33, lty = 3, lwd = 3)\np\n\nggsave(p, filename = \"~/Dropbox/GitHubRepos/gst_rheo/manuscript/figures/Fig3.tiff\", width = 5512,\n       height = 3997, dpi = 72, limitsize = FALSE)\n",
+    "created" : 1473700919223.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3082745730",
+    "id" : "BA33A608",
+    "lastKnownWriteTime" : 1474668719,
+    "last_content_update" : 1474668719620,
+    "path" : "~/Dropbox/GitHubRepos/gst_rheo/R/figures_r/fig1.R",
+    "project_path" : "figures_r/fig1.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

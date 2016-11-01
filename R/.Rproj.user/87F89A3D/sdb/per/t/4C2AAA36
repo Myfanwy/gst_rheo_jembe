@@ -1,0 +1,25 @@
+{
+    "contents" : "",
+    "created" : 1434725418481.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4C2AAA36",
+    "lastKnownWriteTime" : 7011605692497750387,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "nmqr6rzegf",
+        "caption" : "d3",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=d3&cache_key=nmqr6rzegf",
+        "displayedObservations" : 25,
+        "environment" : "",
+        "object" : "d3",
+        "totalObservations" : 25,
+        "variables" : 5
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}

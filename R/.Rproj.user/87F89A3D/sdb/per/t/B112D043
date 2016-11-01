@@ -1,0 +1,17 @@
+{
+    "contents" : "library(rstan)\nlibrary(rethinking)\nlibrary(dplyr)\n\nd <- readxl::read_excel(\"../data_untidy/gst_rheo_all.xlsx\", na = \"NA\" )\nd <- dplyr::tbl_df(d)\nd\nstr(d)\nlibrary(dplyr)\nlibrary(ggplot2)\ndtrim <- select(d, TrialNo, Type, Treatment, Order, FishID, PropPos)\n\n# Plot: negtopos and postoneg by fish\ndens(d$PosToNeg)\nrange(d$PosToNeg)\nlu <- function(x) length(unique(x))\nlu(d$FishID)\nrange(d$FL, na.rm= T)\n\n## Figuring out which fish were tested twice:\nd2 <- d\nd2 <- arrange(d2, FishID)\nd3 <- d2 %>% \n  group_by(FishID) %>% \n  summarise(above = sum(Treatment == \"A\"), below = sum(Treatment == \"B\"),\n            light = sum(Treatment == \"L\"), dark = sum(Treatment == \"D\"))\nd3\n\nd3w <- left_join(d3, d2)\nd3w <- filter(d3w, Type == \"with\")\nd3w <- select(d3w, FishID, above, below, light, dark)\n\nggplot(d, aes(x = NegToPos, y = PosToNeg, color = as.factor(FishID))) + geom_point(aes(size = 2))\n\nactive <- select(d, FishID, PosToNeg, PosToNegPerMinute, NegToPos, NegToPosPerMinute)\n\ns <- active %>% \n  group_by(FishID) %>% \n  summarise(nPosToNeg = mean(PosToNeg), nNegToPos = mean(NegToPos), \n            meanPTN = mean(PosToNegPerMinute), meanNTP = mean(NegToPosPerMinute)) %>% \n  arrange(nPosToNeg)\ns\n\nggplot(s, aes(x = as.factor(FishID), y = nPosToNeg)) + geom_bar(aes(fill = FishID), stat = \"identity\")\n\nlength(which(d$FishID==37))\nd[, d$FishID == 37]\nfilter(d, FishID == 37) %>% \n  select(., Treatment, PropPos, PropNeg, PosToNeg, NegToPos)\n\n## plotting raw data\n\nggplot(d, aes(x = FishID, y = PosToNegPerMinute)) + geom_point(aes(color = as.factor(FishID), size = 2))\n\n\n\n",
+    "created" : 1434725064499.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1409177288",
+    "id" : "B112D043",
+    "lastKnownWriteTime" : 1434727050,
+    "path" : "C:/Users/Myfanwy/Dropbox/GitHubRepos/gst_rheo/R/data_exploration.R",
+    "project_path" : "data_exploration.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

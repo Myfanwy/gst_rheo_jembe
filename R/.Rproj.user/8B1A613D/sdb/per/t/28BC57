@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# For exp 2 remix, treat barbel/nonbarbeled fish as a categorical variable, extract samples from the posterior, add the post$bb (barbelectomied) to post$a (intercept - with barbels fish) and take the pi of it (page 160).\n# that gives the 95% PI for log-odds of PropPos in barbelectomied fish.\n\n\n",
+    "created" : 1471542656716.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2397030614",
+    "id" : "28BC57",
+    "lastKnownWriteTime" : 1471548342,
+    "last_content_update" : 1471548342488,
+    "path" : "~/Dropbox/GitHubRepos/gst_rheo/R/gst_rheo_Exp2_remixed.R",
+    "project_path" : "gst_rheo_Exp2_remixed.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

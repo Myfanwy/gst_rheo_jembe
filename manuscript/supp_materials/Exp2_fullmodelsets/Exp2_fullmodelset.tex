@@ -1,0 +1,627 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Professional Table
+% LaTeX Template
+% Version 1.0 (11/10/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+% Note: to use this table in another LaTeX document, you will need to copy
+% the \usepackage{booktabs} line to the new document and paste it before 
+% \begin{document}. The table itself can then be pasted anywhere in the new
+% document.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables for horizontal lines
+\usepackage[landscape, margin = 0.4in]{geometry} % changes whole document to landscape orientation with 0.5-in margins
+\usepackage{longtable} % allows table to go for more than one page
+\usepackage{amsmath} % for equations
+\usepackage{listings} % for R code
+\usepackage{xcolor} % for syntax highlighting
+\begin{document}
+% Listings Style
+\newcommand\mystyle{\lstset{
+language = R,
+basicstyle = \ttfamily,
+commentstyle=\color{gray},
+ otherkeywords={map2stan, data},
+ keywordstyle=\color{blue}
+ }}
+ % custom environment for your listings
+ \lstnewenvironment{mylist}[1][]
+ {
+ \mystyle
+ \lstset{#1}
+ }
+ {}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%
+ Experiment 2: Full Model Set and R Specification
+\begin{longtable}{p{.10\textwidth} |p{.40\textwidth} |p{.50\textwidth} }
+\toprule % Top horizontal line
+Model & Formula & Rstan Code \\ % Column names row
+\midrule % In-table horizontal line
+%
+%%%%%%%%%%%%%%%%%%
+m0b & % Begin First Row
+%%%%%%%%%%%%%%%
+$$ Y_i \sim Beta(p_i, \theta) $$
+$$ logit(p_i) = \alpha $$
+$$ \alpha \sim Normal(0,1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+%begin code - m0, Row 1
+ &
+ {\begin{mylist}
+# Intercept Model
+m0b <- map2stan(
+  alist(
+    y ~ dbeta2(p,theta),
+    logit(p) <- a,
+    a ~ dnorm(0, 1),
+    theta ~ dcauchy(0,1)
+  ),
+  data = dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta = 1), warmup=1000, iter=1e4, cores=2 )
+ \end{mylist}}
+ \\ % End Content row 1
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%
+ m1b &  % Begin Row 2
+ $$ Y_i \sim Beta(p_i, \theta) $$
+ $$ logit(p_i) = \alpha_{\textsc{fish}[i]} $$
+ $$ \alpha_{\textsc{fish}[i]} \sim Normal(0,1) $$
+ $$ \theta \sim HalfCauchy(0, 1) $$
+&
+% begin code - m1b, Row 2
+{\begin{mylist} 
+# Fixed effects model: fish
+m1b <- map2stan(
+  alist(
+    y ~ dbeta2(p,theta),
+    logit(p) <- a_fish[fish_id],
+    a_fish[fish_id] ~ dnorm(0,1),
+    theta ~ dcauchy(0,1)
+  ),
+  data=dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000 , iter=1e4, cores=2)  \end{mylist}}
+\\ % End content Row 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+m2b & % Begin Row 3
+$$ Y_i \sim Beta(p_i, \theta) $$
+$$ logit(p_i) = \alpha_{\textsc{fish}[i]} $$
+$$ \alpha_{\textsc{fish}[i]} \sim Normal(\alpha,\sigma_\textsc{fish}) $$
+$$ \alpha \sim Normal(0,1) $$
+$$ \sigma_\textsc{fish} \sim HalfCauchy(0,1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+&
+% begin code - m2, Row 3
+{\begin{mylist}
+# Varying intercepts: fish
+m2b <- map2stan(
+  alist(
+    y ~ dbeta2(p,theta),
+    logit(p) <- a_fish[fish_id],
+    a_fish[fish_id] ~ dnorm(a, sigma_fish),
+    a ~ dnorm(0, 1),
+    sigma_fish ~ dcauchy(0,1),
+    theta ~ dcauchy(0,1)
+  ),
+  data = dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2 )
+  \end{mylist}}
+\\ % End content Row 3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+m3b & % Begin Row 4
+$$ Y_i \sim Beta(p_i, \theta) $$
+$$ logit(p_i) = \alpha + \alpha_{\textsc{fish}[i]} + \beta_{\textsc{Treatment}_[i]} $$
+$$ \alpha_{\textsc{fish}[i]} \sim Normal(0,\sigma_{\textsc{fish}}) $$
+$$ \alpha \sim Normal(0, 1) $$
+$$ \sigma_{\textsc{fish}} \sim HalfCauchy(0,1) $$
+$$ \beta_{\textsc{Treatment}}  \sim Normal(0,1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+&
+% begin code - m3, Row 4
+{\begin{mylist}
+# varying intercepts for fish by (fixed) treatment effect
+m3b <- map2stan(
+  alist(
+    y ~ dbeta2( p, theta ),
+    logit(p) <- a + a_fish[fish_id] + 
+    b_treatment*treatment ,
+    a_fish[fish_id] ~ dnorm(0, sigma_fish),
+    a ~ dnorm(0, 1),
+    b_treatment ~ dnorm(0, 1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dcauchy(0, 1)
+  ),
+  data = dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000 , iter=1e4, cores=2) 
+  \end{mylist}}
+\\ % end content row 4
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+m4b & % Begin Row 5
+$$ Y_i \sim Beta(p_i, \theta) $$
+$$ logit(p_i) = \alpha + \alpha_{\textsc{fish}[i]} + \beta_{\textsc{Treatment}[i]} $$
+$$ \alpha_{\textsc{fish}[i]} \sim Normal(0,\sigma_{\textsc{fish}}) $$
+$$ \beta_{\textsc{Treatment}[i]} \sim Normal(0,\sigma_{\textsc{Treatment}}) $$
+$$ \alpha \sim Normal(0, 1) $$
+$$ \sigma_{\textsc{fish}} \sim HalfCauchy(0,1) $$
+$$ \sigma_{\textsc{Treatment}} \sim HalfCauchy(0,1) $$
+$$ \theta \sim Exp(1) $$
+&
+% begin code - m4, Row 5
+{\begin{mylist}
+# Varying Intercepts: fish and treatment
+m4b <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    # linear model
+    logit(p) <- a + a_fish[fish_id] + b_treat[treatment],
+    # adaptive priors
+    a_fish[fish_id] ~ dnorm(0,sigma_fish),
+    b_treat[treatment] ~ dnorm(0, sigma_treat),
+    # fixed priors
+    a ~ dnorm(0, 1),
+    theta ~ dexp(1),
+    sigma_fish ~ dcauchy(0,1),
+    sigma_treat ~ dcauchy(0,1)
+  ),
+  data = dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000 , iter=1e4 , cores=2 )
+  \end{mylist}} 
+\\ % end content row 5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mb1NC & % Begin Row 6
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small  
+$$ logit(p_i) =  \beta_1{\textsc{fish}_[i]} Light_i  + \beta_2{\textsc{fish}_[i]} Dark_i $$
+$$
+\begin{bmatrix}
+\beta_1{\textsc{fish}}\\
+\beta_2{\textsc{fish}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta_1 \\
+\beta_2 \\
+\end{bmatrix}, S \Big)
+$$
+$$ \beta_1  \sim Normal(0,1) $$
+$$ \beta_2  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{FISH} \sim LKJcorr(2) $$
+&
+% begin code - mb1NC, Row 6
+{\begin{mylist}
+m1bNC <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- (b_light + bl_fish[fish_id])*light + 
+    (b_dark + bd_fish[fish_id])*dark,
+    
+    # adaptive non-centered priors 
+    c(bl_fish, bd_fish)[fish_id] ~ dmvnormNC(sigma_fish, 
+    Rho_fish),
+    
+    # fixed priors
+    c(b_light, b_dark) ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlist,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2)  \end{mylist}}
+\\ % end content row 6
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB1 (begin barbelectomy compare) & % content for Row 7
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{Treatment}[i]}$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\beta_{\textsc{fish}}
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta
+\end{bmatrix}, S \Big)
+$$
+$$
+\mathbf{S} = \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right) R \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right)
+$$
+$$ \alpha  \sim Normal(0,1) $$
+$$ \beta  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB1, Row 7
+# varying intercepts with fish, fixed treatment effect
+mB1 <- map2stan(
+    alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + b_treatment*treatment ,
+    
+    # adaptive NON-CENTERED priors 
+    a_fish[fish_id] ~ dmvnormNC(sigma_fish, Rho_fish),
+    
+    # fixed priors
+    b_treatment ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 7
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB2 & % content for Row 8
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{fish}[i]}Treatment$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\beta_{\textsc{fish}}
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta
+\end{bmatrix}, S \Big)
+$$
+$$
+\mathbf{S} = \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right) R \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right)
+$$
+$$ \alpha  \sim Normal(0,1) $$
+$$ \beta  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB2, Row 8
+#  allowing treatment slope to vary by fish
+mB2 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + (b_treatment + 
+    b_fish[fish_id])*treatment ,
+    
+    # adaptive NON-CENTERED priors 
+    c(a_fish, b_fish)[fish_id] ~ dmvnormNC(sigma_fish, 
+    Rho_fish),
+    
+    # fixed priors
+    b_treatment ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB3 & % content for Row 9
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_1{Light} + \beta_2{Dark}$$
+$$\alpha_{\textsc{fish}[i]} \sim Normal(0, \sigma_{\textsc{fish}}) $$
+$$ \alpha  \sim Normal(0,1) $$
+$$ (\beta_1, \beta_2)  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+&
+{\begin{mylist} % Begin code for mB3, Row 9
+#  varying intercepts on fish, individual treatment fixed effects
+mB3 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + b_light*light + 
+    b_dark*dark ,
+    
+    # adaptive NON-CENTERED priors 
+    a_fish[fish_id] ~ dnorm(0, sigma_fish),
+    
+    # fixed priors
+    c(b_light, b_dark) ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 9
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB4& % content for Row 10
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{2fish[i]}}Light_i + \beta_{\textsc{2fish[i]}}Dark_i$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\beta_1{\textsc{fish}} \\
+\beta_2{\textsc{fish}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta_1 \\
+\beta_2 \\
+\end{bmatrix}, S \Big)
+$$
+$$ \alpha  \sim Normal(0,1) $$
+$$ (\beta_1, \beta_2)  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB4, Row 10
+
+# varying intercepts and slopes by fish and treatment
+mB4 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + 
+    (b_light+ bl_fish[fish_id])*light + 
+    (b_dark + bd_fish[fish_id])*dark ,
+    
+    # adaptive NON-CENTERED priors 
+    c(a_fish, bl_fish, bd_fish)[fish_id] ~ 
+    dmvnormNC(sigma_fish, Rho_fish),
+    
+    # fixed priors
+    c(b_light, b_dark) ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB5& % content for Row 11
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{Barbels}[i]}$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\end{bmatrix}, S \Big)
+$$
+$$ (\beta_{\textsc{Barbels}[i]})  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB5, Row 11
+
+# Adding barbels as a fixed effect
+mB5 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + b_barbels*barbels ,
+    
+    # adaptive NON-CENTERED priors 
+    a_fish[fish_id] ~ dmvnormNC(sigma_fish, Rho_fish),
+    
+    # fixed priors
+    b_barbels ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 11
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB6& % content for Row 12
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{Barbels}[i]} + \beta_{\textsc{Treatment}[i]}$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\end{bmatrix}, S \Big)
+$$
+$$ (\beta_{\textsc{Barbels}[i]}, \beta_{\textsc{Treatment}[i]})  \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB6, Row 12
+
+#  Adding barbels and treatment as fixed effects
+mB6 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + b_barbels*barbels + 
+    b_treatment*treatment,
+    
+    # adaptive NON-CENTERED priors 
+    a_fish[fish_id] ~ dmvnormNC(sigma_fish, Rho_fish),
+    
+    # fixed priors
+    c(b_barbels, b_treatment) ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+\\ % end content row 12
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB7& % content for Row 13
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{1Treatment}[i]}Barbels_i$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\beta_{\textsc{Treatment}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta \\
+\end{bmatrix}, S \Big)
+$$
+$$
+\mathbf{S} = \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right) R \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right)
+$$
+$$ \beta_1  \sim Normal(0,1) $$
+$$ (\sigma_{\textsc{treatment}}, \sigma_{\textsc{fish}}) \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB7, Row 13
+
+#  Allowing barbel effect slope to vary with treatment
+mB7 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + (b_barbels + 
+    b_treatment[treatment])*barbels ,
+    
+    # adaptive NON-CENTERED priors 
+    a_fish[fish_id] ~ dmvnormNC(sigma_fish, Rho_fish),
+    b_treatment[treatment] ~ 
+    dmvnormNC(sigma_treatment, Rho_treatment),
+    
+    # fixed priors
+    b_barbels ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    c(sigma_fish, sigma_treatment) ~ dexp(1),
+    c(Rho_fish, Rho_treatment) ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+  \\ % end content row 13
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mB8& % content for Row 13
+$$ Y_i \sim Beta(p_i, \theta) $$
+\small $$ logit(p_i) =  \alpha_{\textsc{fish}[i]} + \beta_{\textsc{fish}[i]}Barbels_i$$
+$$
+\begin{bmatrix}
+\alpha_{\textsc{fish}} \\
+\beta_{\textsc{fish}} \\
+\end{bmatrix} \sim MVNormal \Big(
+\begin{bmatrix}
+\alpha \\
+\beta \\
+\end{bmatrix}, S \Big)
+$$
+$$
+\mathbf{S} = \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right) R \left( \begin{array}{cc}
+\sigma_\alpha & 0 \\
+0 & \sigma_\beta
+\end{array} \right)
+$$
+$$ \beta \sim Normal(0,1) $$
+$$ \sigma_{\textsc{fish}} \sim Exp(1) $$
+$$ \theta \sim HalfCauchy(0, 1) $$
+$$ \rho_{\textsc{fish}} \sim LKJCorr(2) $$
+&
+{\begin{mylist} % Begin code for mB8, Row 14
+
+#  Allowing barbel effect slope to vary with fish
+mB8 <- map2stan(
+  alist(
+    #likelihood
+    y ~ dbeta2( p, theta ),
+    
+    # linear model
+    logit(p) <- a_fish[fish_id] + (b_barbels + 
+    b_fish[fish_id])*barbels ,
+    
+    # adaptive NON-CENTERED priors 
+    c(a_fish, b_fish)[fish_id] ~ 
+    dmvnormNC(sigma_fish, Rho_fish),
+    
+    # fixed priors
+    b_barbels ~ dnorm(0,1),
+    theta ~ dcauchy(0,1),
+    sigma_fish ~ dexp(1),
+    Rho_fish ~ dlkjcorr(2)
+  ),
+  # data
+  data = dlistB,
+  constraints=list(theta="lower=0"),
+  start=list(theta=1), warmup=1000, iter=1e4, cores=2) \end{mylist}}
+  \\ % end content row 14
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\midrule % In-table horizontal line
+%\bottomrule % Bottom horizontal line
+%\end{tabular}
+%\caption* % Table caption, can be commented out if no caption is required
+%\label{tab:template} % A label for referencing this table elsewhere, references are used in text as \ref{label}
+\end{longtable}
+%\end{table}
+\end{document}

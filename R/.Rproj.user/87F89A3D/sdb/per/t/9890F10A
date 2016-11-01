@@ -1,0 +1,17 @@
+{
+    "contents" : "library(rethinking)\nlibrary(rstan)\nd <- readxl::read_excel(\"../data_untidy/gst_rheo_all.xlsx\", na = \"NA\" )\n\n# find start values\n( dbeta2( d$PropPos , 0.5 , 10 , log=TRUE ) )\n\ny <- d$PropPos\ny[y==0] <- 0.0001 ## fix the one zero element\n\nsum( dbeta2( y , 0.5 , 10 , log=TRUE ) )\n\n# fit\nm0 <- map2stan(\n    alist(\n        y ~ dbeta2(p,theta),\n        logit(p) <- a,\n        a ~ dnorm(0,10), #slightly less informative than (0,1)\n        theta ~ dcauchy(0,1) #actually halfcauchy because of the way stan processes it\n    ),\n    data=list(\n        y=y\n    ),\n    constraints=list(theta=\"lower=0\"),\n    start=list(theta = 1),\n    sample=TRUE , warmup=1000 , iter=1e4 , \n    cores=2 , chains=2 )\n\n\n\n# compute predicted proportions for each case in data\np_pred <- sim(m0)\nplot(p_pred)\n# to summarize\napply( p_pred , 2 , mean )\n\nm1 <- map2stan(\n  alist(\n    y ~ dbeta2(p,theta),\n    logit(p) <- a + a_fish[fish_id],\n    a ~ dnorm(0,10),\n    a_fish[fish_id] ~ dnorm(0, sigma_fish),\n    theta ~ dcauchy(0,1),\n    sigma_fish ~ dcauchy(0,1)\n  ),\n  data=list(\n    y=y,\n    fish_id=coerce_index(d$FishID) #makes it not confused about the fact that they're nonconsecutive\n  ),\n  constraints=list(theta=\"lower=0\"),\n  start=list(theta=1,a=0),\n  sample=TRUE , warmup=1000 , iter=1e4 , \n  cores=2 , chains=2 )\n\n# compute predicted proportions for each case in data\np_pred1 <- sim(m1)\n# to summarize\napply( p_pred1 , 2 , mean ) #including FishID increasted the variability considerably\n\n\n##There's no way this is going to work, but here goes\n\nm2 <- map2stan(\n  alist(\n    y ~ dbeta2(p,theta),\n    logit(p) <- a + a_fish[fish_id] + b_treatment[treatment],\n    a ~ dnorm(0,10),\n    a_fish[fish_id] ~ dnorm(0, sigma_fish),\n    b_treatment[treatment] ~ dnorm(0, sigma_treatment),\n    theta ~ dcauchy(0,1),\n    sigma_fish ~ dcauchy(0,1),\n    sigma_treatment ~ dcauchy(0,1)\n  ),\n  data=list(\n    y=y,\n    fish_id=coerce_index(d$FishID), #makes it not confused about the fact that they're nonconsecutive\n    treatment = d$Treatment\n  ),\n  constraints=list(theta=\"lower=0\"),\n  start=list(theta=1,a=0),\n  sample=TRUE , warmup=1000 , iter=1e4 , \n  cores=2 , chains=2 )\n\n# compute predicted proportions for each case in data\np_pred2 <- sim(m2)\n# to summarize\napply( p_pred1 , 2 , mean ) #including FishID increasted the variability considerably\n\n#... well - it worked.  If only I knew what the @#$@$^@$ it #%#@%$@#ing means",
+    "created" : 1434664350762.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3384516057",
+    "id" : "9890F10A",
+    "lastKnownWriteTime" : 1435072824,
+    "path" : "C:/Users/Myfanwy/Dropbox/GitHubRepos/gst_rheo/R/gst_rheo_models.R",
+    "project_path" : "gst_rheo_models.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

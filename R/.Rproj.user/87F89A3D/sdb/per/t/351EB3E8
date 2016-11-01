@@ -1,0 +1,25 @@
+{
+    "contents" : "",
+    "created" : 1434726146806.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "351EB3E8",
+    "lastKnownWriteTime" : 7011605692497750387,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "x20mc0g05e",
+        "caption" : "d3w",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=d3w&cache_key=x20mc0g05e",
+        "displayedObservations" : 96,
+        "environment" : "",
+        "object" : "d3w",
+        "totalObservations" : 96,
+        "variables" : 5
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}
